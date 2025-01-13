@@ -1,6 +1,8 @@
 import { ref } from 'vue';
 import jwtDecode from 'jwt-decode';
 import { axiosInstance } from '../boot/axios';
+import config from '../config/config.json'; 
+import Router from '@/router'
 
 
 // Determine login route based on SSO configuration
@@ -55,7 +57,8 @@ const destroyToken = () => {
     .delete('users/refreshtoken')
     .then(() => {
       clearUser();
-      document.location.href = 'https://example.com/SSOlogout';
+      if(config.isSSO) document.location.href = 'https://example.com/SSOlogout';
+      else Router.push('/login')
     })
     .catch((err) => {
       console.log(err)

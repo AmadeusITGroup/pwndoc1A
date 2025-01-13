@@ -1,6 +1,6 @@
 <div>
     <breadcrumb 
-    :title="`${audit.name}`" 
+    :title="`${audit.name} (${audit.auditType || 'Audit Type not set'})`" 
     :state="parentState" 
     :approvals="parentApprovals"
   >
