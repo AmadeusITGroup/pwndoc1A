@@ -132,14 +132,18 @@ AuditSchema.plugin(mongooseFieldEncryption, {
 AuditSchema.statics.getAudits = (isAdmin, userId, filters) => {
     return new Promise(async (resolve, reject) => { 
         try {
-            const rows = await Audit.find()
-            .populate('creator', 'username')
-            .populate('collaborators', 'username')
-            .populate('reviewers', 'username firstname lastname')
-            .populate('approvals', 'username firstname lastname')
-            .populate('company', 'name')
-            .select('id name auditType language creator collaborators company createdAt state type parentId')
-            .exec();
+            let query = Audit.find();
+            if (!isAdmin) {
+                query = query.find({ $or: [{creator: userId}, {collaborators: userId}, {reviewers: userId}] });
+            }
+            const rows = await query
+                .populate('creator', 'username')
+                .populate('collaborators', 'username')
+                .populate('reviewers', 'username firstname lastname')
+                .populate('approvals', 'username firstname lastname')
+                .populate('company', 'name')
+                .select('id name auditType language creator collaborators company createdAt state type parentId')
+                .exec();
             if (filters) {
                 const tab = [];
                 for (const row of rows) {

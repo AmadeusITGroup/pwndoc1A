@@ -12,7 +12,7 @@
             class="sticky-header-table"
             :columns="dtHeaders"
             :visible-columns="visibleColumns"
-            :rows="auditsAllowed || []"
+            :rows="audits || []"
             :filter="search"
             :filter-method="customFilter"
             :pagination.sync="pagination"
@@ -254,22 +254,12 @@ export default {
         console.log(err);
       }
     };
-    const isAllowedAudits = async (auditsToFilter) => {
-      return auditsToFilter.filter(audit => 
-        user.value.id === audit.creator._id ||
-        (audit.collaborators && audit.collaborators.some(collaborator => 
-          user.value.id === collaborator._id
-        )) ||
-        isAllowed('*')
-      )
-    }
 
     const getAudits = async () => {
       loading.value = true;
       try {
         const data = await AuditService.getAudits(search.finding);
         audits.value = data.data.datas;
-        auditsAllowed.value = await isAllowedAudits(audits.value)       
         loading.value = false;
       } catch (err) {
         loading.value = false
@@ -473,7 +463,6 @@ export default {
     return {
       t,
       isAllowed,
-      auditsAllowed,
       audits,
       loading,
       settings,

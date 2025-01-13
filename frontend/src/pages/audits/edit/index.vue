@@ -340,7 +340,7 @@
 	  const customFields = ref([]);
 	  const auditTypes = ref([]);
 	  const findingList = ref([]);
-	  const frontEndAuditState = ref(Utils.AUDIT_VIEW_STATE.EDIT);
+	  const frontEndAuditState = ref(Utils.AUDIT_VIEW_STATE.EDIT_READONLY);
 	  const AUDIT_VIEW_STATE = Utils.AUDIT_VIEW_STATE;
 	  const tabAttach = ref([{ isAttachement: false }]);
 	  const commentMode = ref(false)
@@ -472,7 +472,7 @@
 	  };
   
 	  const isUserAnEditor = () => {
-		  const isAuthor = audit.creator._id === user._id;
+		  const isAuthor = audit.creator._id === user.value.id;
 		  const isCollaborator = audit.collaborators.some(element => element._id === user.id);
 		  const hasUpdateAll = isAllowed('audits:update-all');
 		  const isEditor = isAuthor || isCollaborator || hasUpdateAll;
