@@ -5,7 +5,7 @@ module.exports = function(app) {
     var acl = require('../lib/auth.js').acl
 
     // Get Attachment
-    app.get("/api/audits/:auditId/attachments/:attachmentId", acl.hasPermission('audits:update-all'), function(req, res) {
+    app.get("/api/audits/:auditId/attachments/:attachmentId", acl.hasPermission('audits:update'), function(req, res) {
         if(!req.params.auditId || !req.params.attachmentId) {
             Response.BadParameters(res, 'Missing some required parameters: auditId');
             return;
@@ -20,7 +20,7 @@ module.exports = function(app) {
     })
 
     // Delete attachment
-    app.delete("/api/audits/:auditId/attachments/:attachmentId", acl.hasPermission('audits:update-all'), function(req, res) {
+    app.delete("/api/audits/:auditId/attachments/:attachmentId", acl.hasPermission('audits:update'), function(req, res) {
         if(!req.params.auditId || !req.params.attachmentId) {
             Response.BadParameters(res, 'Missing some required parameters: auditId');
             return;

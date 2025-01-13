@@ -1,5 +1,5 @@
 import { Notify } from 'quasar';
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, getCurrentInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import _ from 'lodash';
@@ -26,7 +26,8 @@ export default {
   setup(props) {
     const { t } = useI18n();
     const route = useRoute();
-    const audit = ref({});
+    const { proxy } = getCurrentInstance();
+    const audit = computed(() => proxy.$parent.$parent.audit);
     const auditId = ref(route.params.auditId);
     const finding = reactive({});
     const findingTitle = ref('');
@@ -51,6 +52,7 @@ export default {
     const vulnCategories = ref([]);
     const htmlEncode = Utils.htmlEncode;
     const AUDIT_VIEW_STATE = Utils.AUDIT_VIEW_STATE;
+
 
     const dtVulnHeaders = computed(() => [
       { name: 'title', label: t('title'), field: (row) => row.detail.title, align: 'left', sortable: true },
