@@ -704,7 +704,7 @@ AuditSchema.statics.getFinding = (isAdmin, auditId, userId, findingId) => {
             if(finding.cvssv3 && !finding.cvss.cvssv3) finding.cvss.cvssv3 = finding.cvssv3
             var User = mongoose.model('User')
             let user = await User.findById(finding.creator)
-            finding.creator = user.firstname
+            if (user) finding.creator = user.firstname
             if (finding === null) 
                 throw({fn: 'NotFound', message: 'Finding not found'})
             else {

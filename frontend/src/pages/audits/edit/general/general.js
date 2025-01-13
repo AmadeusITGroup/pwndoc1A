@@ -66,6 +66,45 @@ export default {
     const loading = ref(true);
     const AUDIT_VIEW_STATE = Utils.AUDIT_VIEW_STATE;
     const frontEndAuditState = ref(Utils.AUDIT_VIEW_STATE.EDIT);
+    const columns = ref([
+      {
+        name: 'filename',
+        label: 'Filename',
+        field: 'filename',
+        align: 'left'
+      },
+      {
+          name: 'actions',
+          label: 'Actions',
+          field: 'actions',
+          align: 'center'
+      },
+      {
+        name: '_id',
+        label: 'ID',
+        field: '_id',
+        align: 'left',
+      },
+      {
+        name: 'length',
+        label: 'Length',
+        field: 'length',
+        align: 'right',
+      },
+      {
+        name: 'chunkSize',
+        label: 'Chunk Size',
+        field: 'chunkSize',
+        align: 'right',
+      },
+      {
+        name: 'uploadDate',
+        label: 'Upload Date',
+        field: 'uploadDate',
+        align: 'left',
+      },
+
+    ]);
 
     const getAuditGeneral = async () => {
       try {
@@ -271,7 +310,7 @@ export default {
 
     const updateFiles = (event) => {
       // Convert FileList to an array
-      const newFiles = Array.from(event.target.files);
+      const newFiles = Array.from(event);
 
       files.value = newFiles;
 
@@ -320,11 +359,9 @@ export default {
 
     const deleteDocument = async (index) => {
       try {
-        const data = await AuditService.getAudit(auditId.value);
-        await AttachmentService.deleteAttachment(auditId.value, data.data.datas.attachments[index]._id);
-        audit.attachments.splice(index, 1);
+        await AttachmentService.deleteAttachment(auditId.value, index._id);
         updateAuditGeneral();
-        printPositiveMessage('Attachment successfully deleted');
+        printPositiveMessage('Attachment ' + index.filename + ' successfully deleted');
       } catch (err) {
         console.log(err);
         printNegativeMessage(err.response.data.datas);
@@ -333,8 +370,7 @@ export default {
 
     const downloadDocument = async (index) => {
       try {
-        const data = await AuditService.getAudit(auditId.value);
-        const attachmentData = await AttachmentService.getAttachment(auditId.value, data.data.datas.attachments[index]._id);
+        const attachmentData = await AttachmentService.getAttachment(auditId.value, index._id);
         const file = attachmentData.data.datas;
         const blob = new Blob([Uint8Array.from(atob(file.value), c => c.charCodeAt(0))], {type: "application/octet-stream"});
         const link = document.createElement('a');
@@ -343,7 +379,7 @@ export default {
         document.body.appendChild(link);
         link.click();
         link.remove();
-        printPositiveMessage('Attachment successfully downloaded');
+        printPositiveMessage('Attachment ' + index.filename + ' successfully downloaded');
         files.value = null;
       } catch (err) {
         printNegativeMessage(err.response.data.datas);
@@ -413,6 +449,7 @@ export default {
       selectedTab,
       AUDIT_VIEW_STATE,
       frontEndAuditState,
+      columns,
       getAuditGeneral,
       updateAuditGeneral,
       getClients,

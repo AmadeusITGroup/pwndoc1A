@@ -71,6 +71,45 @@ export default {
       hour: 'numeric',
       minute: '2-digit',
     });
+    const columns = ref([
+      {
+        name: 'filename',
+        label: 'Filename',
+        field: 'filename',
+        align: 'left'
+      },
+      {
+          name: 'actions',
+          label: 'Actions',
+          field: 'actions',
+          align: 'center'
+      },
+      {
+        name: '_id',
+        label: 'ID',
+        field: '_id',
+        align: 'left',
+      },
+      {
+        name: 'length',
+        label: 'Length',
+        field: 'length',
+        align: 'right',
+      },
+      {
+        name: 'chunkSize',
+        label: 'Chunk Size',
+        field: 'chunkSize',
+        align: 'right',
+      },
+      {
+        name: 'uploadDate',
+        label: 'Upload Date',
+        field: 'uploadDate',
+        align: 'left',
+      },
+
+    ]);
 
     const _listener = (e) => {
       if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.keyCode == 83) {
@@ -106,8 +145,7 @@ export default {
 
     const downloadAttachement = async (index) => {
       try {
-        const data = await AuditService.getFinding(auditId.value, findingId.value);
-        const attachmentData = await AttachmentService.getAttachment(auditId.value, data.data.datas.attachments[index]._id);
+        const attachmentData = await AttachmentService.getAttachment(auditId.value, index._id);
         const file = attachmentData.data.datas;
         const blob = new Blob([Uint8Array.from(atob(file.value), c => c.charCodeAt(0))], { type: "application/octet-stream" });
         const link = document.createElement('a');
@@ -116,7 +154,7 @@ export default {
         document.body.appendChild(link);
         link.click();
         link.remove();
-        printPositiveMessage('Attachment successfully downloaded');
+        printPositiveMessage('Attachment ' + index.filename + ' successfully downloaded');
       } catch (err) {
         printNegativeMessage(err.response.data.datas);
       }
@@ -145,16 +183,15 @@ export default {
     };
 
     const deleteAttachement = (index) => {
-      AttachmentService.deleteAttachment(auditId.value, finding.attachments[index]._id)
+      AttachmentService.deleteAttachment(auditId.value, index._id)
         .then(msg => {
-          finding.attachments.splice(index, 1);
           updateFinding();
-          printPositiveMessage("Attachment succesfully deleted");
+          printPositiveMessage("Attachment " + index.filename + " succesfully deleted");
         });
     };
 
     const updateFiles = (event) => {
-      const newFiles = Array.from(event.target.files);
+      const newFiles = Array.from(event);
       files.value = newFiles;
       const promises = files.value.map((file) => {
         return new Promise((resolve, reject) => {
@@ -750,6 +787,7 @@ export default {
       hoverReply,
       commentDateOptions,
       attachments,
+      columns,
       _listener,
       getVulnTypes,
       cleanFiles,
