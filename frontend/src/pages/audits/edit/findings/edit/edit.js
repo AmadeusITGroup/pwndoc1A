@@ -39,7 +39,9 @@ export default {
 
     const auditId = ref(route.params.auditId);
     const findingId = ref(route.params.findingId);
-    const finding = reactive({});
+    const finding = reactive({
+      attachments: [],
+    });
     const findingOrig = reactive({});
     const selectedTab = ref("definition");
     const proofsTabVisited = ref(false);
@@ -185,6 +187,7 @@ export default {
     const deleteAttachement = (index) => {
       AttachmentService.deleteAttachment(auditId.value, index._id)
         .then(msg => {
+          finding.attachments.splice(index, 1);
           updateFinding();
           printPositiveMessage("Attachment " + index.filename + " succesfully deleted");
         });
