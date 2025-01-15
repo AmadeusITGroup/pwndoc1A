@@ -442,19 +442,18 @@ export default {
 
         const createCustomField = () => {
 
-            if (newCustomField.fieldType !== 'space') {
-                $refs['select-component'].validate()
-                $refs['input-label'].validate()
+            if (newCustomField.value.fieldType !== 'space') {
+                proxy.$refs['select-component'].validate()
+                proxy.$refs['input-label'].validate()
 
-                if ($refs['select-component'].hasError || $refs['input-label'].hasError)
+                if (proxy.$refs['select-component'].hasError || proxy.$refs['input-label'].hasError)
                     return
             }
-
-            newCustomField.position = customFields.length
-            DataService.createCustomField(newCustomField)
+            newCustomField.value.position = customFields.value.length
+            DataService.createCustomField(newCustomField.value)
             .then((data) => {
-                newCustomField.label = ""
-                newCustomField.options = []
+                newCustomField.value.label = ""
+                newCustomField.value.options = []
                 getCustomFields()
                 Notify.create({
                     message: 'Custom Field created successfully',
@@ -473,7 +472,30 @@ export default {
             })
         }
 
-        const deleteCustomField = () => {
+        const updateCustomFields = () => {
+            var position = 0
+            customFields.value.forEach(e => e.position = position++)
+            DataService.updateCustomFields(customFields.value)
+            .then((data) => {
+                getCustomFields()
+                Notify.create({
+                    message: 'Custom Fields updated successfully',
+                    color: 'positive',
+                    textColor:'white',
+                    position: 'top-right'
+                })
+            })
+            .catch((err) => {
+                Notify.create({
+                    message: err.response.data.datas,
+                    color: 'negative',
+                    textColor: 'white',
+                    position: 'top-right'
+                })
+            })
+        };
+
+        const deleteCustomField = (customField) => {
 
             Dialog.create({
                 title: 'Confirm Suppression',
@@ -489,8 +511,8 @@ export default {
                     </div>
                 </div>
                 `,
-                ok: {label: $t('btn.confirm'), color: 'negative'},
-                cancel: {label: $t('btn.cancel'), color: 'white'},
+                ok: {label: t('btn.confirm'), color: 'positive'},
+                cancel: {label: t('btn.cancel'), color: 'negative'},
                 html: true,
                 style: "width: 600px"
             })
@@ -520,36 +542,39 @@ export default {
             })
         }
 
-        const canDisplayCustomField = () => {
-
+        const canDisplayCustomField = async (field) => {
+            if (!field) return 
             return (
-                (newCustomField.display === field.display || (newCustomField.display === 'finding' && field.display === 'vulnerability')) && 
-                (newCustomField.displaySub === field.displaySub || field.displaySub === '')
+                (newCustomField.value.display === field.display || (newCustomField.value.display === 'finding' && field.display === 'vulnerability')) && 
+                (newCustomField.value.displaySub === field.displaySub || field.displaySub === '')
             )
         }
 
-        const canDisplayCustomFields = () => {
-            return customFields.value.some(field => canDisplayCustomField(field))
+        const canDisplayCustomFields = async () => {
+            const results = await Promise.all(
+                customFields.value.map(field => canDisplayCustomField(field))
+            );
+            return results.some(result => result);
 
         }
 
         const getFieldLocaleText = (fieldIdx) => {
 
-            var text = customFields[fieldIdx].text
+            var text = customFields.value[fieldIdx].text
             for (var i=0; i<text.length; i++) {
-                if (text[i].locale === cfLocale)
+                if (text[i].locale === cfLocale.value)
                     return i
             }
-            if (['select-multiple', 'checkbox'].includes(customFields[fieldIdx].fieldType))
-                text.push({locale: cfLocale, value: []})
+            if (['select-multiple', 'checkbox'].includes(customFields.value[fieldIdx].fieldType))
+                text.push({locale: cfLocale.value, value: []})
             else
-                text.push({locale: cfLocale, value: ""})
+                text.push({locale: cfLocale.value, value: ""})
             return i
         }
 
-        const addCustomFieldOption = () => {
-            options.push({locale: cfLocale, value: newCustomOption})
-            newCustomOption = ""
+        const addCustomFieldOption = (options) => {
+            options.push({locale: cfLocale.value, value: newCustomOption.value})
+            newCustomOption.value = ""
         }
 
         const removeCustomFieldOption = (options, option) => {
@@ -559,12 +584,12 @@ export default {
 
         const getOptionsGroup = (options) => {
             return options
-            .filter(e => e.locale === cfLocale)
+            .filter(e => e.locale === cfLocale.value)
             .map(e => {return {label: e.value, value: e.value}})
         }
 
         const getFieldLangOptions = (options) => {
-            return options.filter(e => e.locale === cfLocale)
+            return options.filter(e => e.locale === cfLocale.value)
         }
 
         const getSections = () => {
@@ -579,19 +604,18 @@ export default {
 
         const createSection = () => {
             cleanErrors();
-            if (!newSection.field)
+            if (!newSection.value.field)
                 errors.sectionField = "Field required";
-            if (!newSection.name)
+            if (!newSection.value.name)
                 errors.sectionName = "Name required";
             
             if (errors.sectionName || errors.sectionField)
                 return;
-
-            DataService.createSection(newSection)
+            DataService.createSection(newSection.value)
             .then((data) => {
-                newSection.field = "";
-                newSection.name = "";
-                newSection.icon = ""
+                newSection.value.field = "";
+                newSection.value.name = "";
+                newSection.value.icon = ""
                 getSections();
                 Notify.create({
                     message: 'Section created successfully',
@@ -611,11 +635,10 @@ export default {
         }
 
         const updateSections = () => {
-            Utils.syncEditors($refs)
-            DataService.updateSections(editSections)
+            DataService.updateSections(editSections.value)
             .then((data) => {
-                sections = editSections
-                editSection = false
+                sections.value = editSections.value
+                editSection.value = false
                 Notify.create({
                     message: 'Sections updated successfully',
                     color: 'positive',
@@ -633,9 +656,9 @@ export default {
             })
         }
 
-        const removeSection = () => {
+        const removeSection = (index) => {
             
-            editSections.splice(index, 1)
+            editSections.value.splice(index, 1)
         }
 
         const cleanErrors = () => {
@@ -733,6 +756,7 @@ export default {
             updateSections,
             removeSection,
             cleanErrors,
+            updateCustomFields,
             _,
             locale,
             Utils

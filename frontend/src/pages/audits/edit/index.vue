@@ -269,7 +269,7 @@
 				<q-separator class="q-my-sm" />
 			  </div>
 			  <q-list v-for="section of audit.sections" :key="section._id">
-				<q-item :to="'/audits/'+auditId+'/sections/'+section._id">
+				<q-item :to="'/audits/'+auditId+'/sections/'+section._id" active-class="custom-active-item">
 				  <q-item-section avatar>
 					<q-icon :name="getSectionIcon(section)"></q-icon>
 				  </q-item-section>
@@ -278,7 +278,7 @@
 				  </q-item-section>
 				</q-item>
 				<div class="row">
-				  <div v-for="(user,idx) in sectionUsers" :key="idx" v-if="user.section === section._id" class="col multi-colors-bar" :style="{background:user.color}" />
+				  <div v-for="(user,idx) in getUsersForSection(section._id)" :key="idx" class="col multi-colors-bar" :style="{background:user.color}" />
 				</div>
 			  </q-list>
 			</q-list>
@@ -347,9 +347,7 @@
 	  const editComment = ref("")
 	  const editReply = ref("")
 	  const generalUsers = computed(() => users.value.filter(user => user.menu === 'general'));
-	  const networkUsers = computed(() => users.value.filter(user => user.menu === 'network'));
-	  const sectionUsers = computed(() => users.value.filter(user => user.menu === 'editSection'));
-  
+	  const networkUsers = computed(() => users.value.filter(user => user.menu === 'network'));  
 	  const currentAuditType = computed(() => auditTypes.value.find(e => e.name === audit.auditType));
 
 	  const lightenColor = (color, percent) => {
@@ -390,6 +388,12 @@
 	  const getUsersForFinding = (findingId) => {
 			return users.value.filter(user => 
 				user.menu === 'editFinding' && user.finding === findingId
+			)
+	  };
+
+	  const getUsersForSection = (sectionId) => {
+			return users.value.filter(user => 
+				user.menu === 'editSection'
 			)
 	  };
   
@@ -464,23 +468,23 @@
 	  };
   
 	  const isUserAReviewer = () => {
-		var isAuthor = audit.creator._id === user.id;
-		var isCollaborator = audit.collaborators.some((element) => element._id === user.id);
-		var isReviewer = audit.reviewers.some((element) => element._id === user.id);
+		var isAuthor = audit.creator._id === user.value.id;
+		var isCollaborator = audit.collaborators.some((element) => element._id === user.value.id);
+		var isReviewer = audit.reviewers.some((element) => element._id === user.value.id);
 		var hasReviewAll = isAllowed('audits:review-all');
 		return !(isAuthor || isCollaborator) && (isReviewer || hasReviewAll);
 	  };
   
 	  const isUserAnEditor = () => {
 		  const isAuthor = audit.creator._id === user.value.id;
-		  const isCollaborator = audit.collaborators.some(element => element._id === user.id);
+		  const isCollaborator = audit.collaborators.some(element => element._id === user.value.id);
 		  const hasUpdateAll = isAllowed('audits:update-all');
 		  const isEditor = isAuthor || isCollaborator || hasUpdateAll;
 		  return isEditor;
 	  };
   
 	  const userHasAlreadyApproved = () => {
-		return audit.approvals.some((element) => element._id === user.id);
+		return audit.approvals.some((element) => element._id === user.value.id);
 	  };
   
 	  const getUIState = () => {
@@ -710,7 +714,6 @@
 		tabAttach,
 		generalUsers,
 		networkUsers,
-		sectionUsers,
 		currentAuditType,
 		getFindingColor,
 		getFindingSeverity,
@@ -728,7 +731,8 @@
 		BlobReader,
 		getSortOptions,
 		lighterFindingColor,
-		getUsersForFinding
+		getUsersForFinding,
+		getUsersForSection
 	  };
 	},
 	components: {

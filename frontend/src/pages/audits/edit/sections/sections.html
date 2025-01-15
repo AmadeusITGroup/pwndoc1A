@@ -1,17 +1,17 @@
 <div>
 <breadcrumb
 buttons
-:title="`${$parent.audit.name} (${$parent.audit.auditType || 'Audit Type not set'})`"
+:title="`${audit.name} (${audit.auditType || 'Audit Type not set'})`"
 :state="parentState"
 :approvals="parentApprovals"
-:path="($parent.audit.parentId) ? `/audits/${$parent.audit.parentId}` : ''"
-:path-name="($parent.audit.type === 'retest') ? t('originalAudit') : ($parent.audit.type === 'default') ? t('multi') : ''"
+:path="(audit.parentId) ? `/audits/${audit.parentId}` : ''"
+:path-name="(audit.type === 'retest') ? t('originalAudit') : (audit.type === 'default') ? t('multi') : ''"
 >
-    <template slot="buttons">
+    <template v-slot:buttons>
         <q-btn
-        :flat="!$parent.commentMode" 
-        :outline="$parent.commentMode"
-        :class="{'bg-grey-3': $parent.commentMode}"
+        :flat="!$parent.$parent.commentMode" 
+        :outline="$parent.$parent.commentMode"
+        :class="{'bg-grey-3': $parent.$parent.commentMode}"
         icon="o_mode_comment"
         :ripple="false"
         @click="toggleCommentView()" 
@@ -24,9 +24,9 @@ buttons
 </breadcrumb>
 
 <div class="row q-pa-md">
-    <div :class="($parent.commentMode)?'col-md-8 col-12':'col-md-8 col-12 offset-md-2'">
+    <div :class="($parent.$parent.commentMode)?'col-md-8 col-12':'col-md-8 col-12 offset-md-2'">
         <q-card>
-            <component :is="($parent.commentMode)?'q-scroll-area':'div'" :class="{'scrollarea': $parent.commentMode}">
+            <component :is="($parent.$parent.commentMode)?'q-scroll-area':'div'" :class="{'scrollarea': $parent.$parent.commentMode}">
                 <!-- For retrocompatibility, test if section.text exists -->
                 <q-card-section v-if="section.text"> 
                     <basic-editor ref="basiceditor_section" noSync v-model="section.text" :editable="frontEndAuditState === AUDIT_VIEW_STATE.EDIT" />
@@ -37,15 +37,16 @@ buttons
                 custom-element="QCardSection" 
                 no-sync-editor
                 :readonly="frontEndAuditState !== AUDIT_VIEW_STATE.EDIT"
-                :locale="$parent.audit.language"
-                :comment-mode="$parent.commentMode"
+                :locale="audit.language"
+                :comment-mode="$parent.$parent.commentMode"
                 :field-highlighted="fieldHighlighted"
                 @create-comment="createComment"
                 />
+               
             </component>
         </q-card>
     </div>
-    <q-card class="bg-grey-11 col-md-3 col-12 offset-md-1" v-if="$parent.commentMode">
+    <q-card class="bg-grey-11 col-md-3 col-12 offset-md-1" v-if="$parent.$parent.commentMode">
         <q-item>
             <q-item-section>
                 <span class="text-h6">{{t('comments')}}</span>
@@ -57,16 +58,16 @@ buttons
                 <q-btn outline icon="o_filter_alt">
                     <q-menu anchor="bottom end" self="top end">
                         <q-list>
-                            <q-item clickable @click="($parent.commentsFilter === 'active')?$parent.commentsFilter = 'all':$parent.commentsFilter = 'active'">
-                                <q-item-section :class="{'invisible': $parent.commentsFilter !== 'active'}" side class="q-pr-sm">
+                            <q-item clickable @click="(commentsFilter === 'active')?commentsFilter = 'all':commentsFilter = 'active'">
+                                <q-item-section :class="{'invisible': commentsFilter !== 'active'}" side class="q-pr-sm">
                                     <q-icon size="xs" name="done" />
                                 </q-item-section>
                                 <q-item-section>
                                     <span>{{t('activeOnly')}}</span>
                                 </q-item-section>
                             </q-item>
-                            <q-item clickable @click="($parent.commentsFilter === 'resolved')?$parent.commentsFilter = 'all':$parent.commentsFilter = 'resolved'">
-                                <q-item-section :class="{'invisible': $parent.commentsFilter !== 'resolved'}" side class="q-pr-sm">
+                            <q-item clickable @click="(commentsFilter === 'resolved')?commentsFilter = 'all':commentsFilter = 'resolved'">
+                                <q-item-section :class="{'invisible': commentsFilter !== 'resolved'}" side class="q-pr-sm">
                                     <q-icon size="xs" name="done" />
                                 </q-item-section>
                                 <q-item-section>
@@ -80,10 +81,10 @@ buttons
         </q-item>
         <q-scroll-area class="comment-panel-height">
             <q-list>
-                <div v-for="comment in $parent.audit.comments" :key="comment._id">
+                <div v-for="comment in audit.comments" :key="comment._id">
                     <q-item v-if="displayComment(comment)">
                         <q-item-section @click="focusComment(comment)">
-                            <q-card :class="{'highlighted-border': $parent.focusedComment === comment._id, 'bg-blue-grey-1': comment.resolved, 'text-grey-8': comment.resolved}">
+                            <q-card :class="{'highlighted-border': focusedComment === comment._id, 'bg-blue-grey-1': comment.resolved, 'text-grey-8': comment.resolved}">
                                 <!-- Resolved Header -->
                                 <q-item v-if="comment.resolved">
                                     <q-item-section>
@@ -115,8 +116,8 @@ buttons
                                         </span>
                                     </q-item-section>
                                     <q-item-section side v-if="!comment.resolved">
-                                        <div v-if="!$parent.editComment && !$parent.replyingComment && !$parent.editReply" class="q-gutter-xs">
-                                            <q-btn v-if="!comment.resolved" size="sm" dense flat color="primary" icon="edit" @click="$parent.editComment = comment._id; comment.textTemp = comment.text">
+                                        <div v-if="!editComment && !replyingComment && !editReply" class="q-gutter-xs">
+                                            <q-btn v-if="!comment.resolved" size="sm" dense flat color="primary" icon="edit" @click="editComment = comment._id; comment.textTemp = comment.text">
                                                 <q-tooltip anchor="bottom middle" self="center left" :delay="500" content-class="text-bold">{{t('tooltip.editComment')}}</q-tooltip> 
                                             </q-btn>
                                             <q-btn size="sm" dense flat color="green" icon="done" @click="comment.resolved = true; updateComment(comment)">
@@ -133,7 +134,7 @@ buttons
                                 <!-- Comment -->
                                 <q-item class="q-pt-none">
                                     <q-item-section>
-                                        <div v-if="$parent.editComment === comment._id" class="q-gutter-sm">
+                                        <div v-if="editComment === comment._id" class="q-gutter-sm">
                                             <q-input
                                             v-model="comment.textTemp"
                                             autogrow
@@ -146,7 +147,7 @@ buttons
                                             <q-btn class="float-right" unelevated color="blue-10" icon="done" @click="updateComment(comment)"></q-btn>
                                         </div>
                                         <span v-else style="white-space: pre-line">{{comment.text}}</span>
-                                        <span v-if="$parent.focusedComment === comment._id && $parent.editComment !== comment._id" class="text-caption">{{new Date(comment.createdAt).toLocaleDateString($parent.systemLanguage, commentDateOptions)}}</span>
+                                        <span v-if="focusedComment === comment._id && editComment !== comment._id" class="text-caption">{{new Date(comment.createdAt).toLocaleDateString(systemLanguage, commentDateOptions)}}</span>
                                     </q-item-section>
                                 </q-item>
                                 <!-- Replies -->
@@ -156,22 +157,22 @@ buttons
                                             {{(reply.author && reply.author.firstname)?reply.author.firstname:''}}
                                             {{(reply.author && reply.author.lastname)?reply.author.lastname:''}}
                                         </span>
-                                        <div v-if="$parent.editReply === reply._id" class="q-gutter-sm">
+                                        <div v-if="editReply === reply._id" class="q-gutter-sm">
                                             <q-input 
                                             v-model="reply.textTemp"
                                             autogrow
                                             outlined
                                             dense
                                             />
-                                            <q-btn class="float-right" outline color="primary" icon="close" @click="$parent.editReply = null"></q-btn>
+                                            <q-btn class="float-right" outline color="primary" icon="close" @click="editReply = null"></q-btn>
                                             <q-btn class="float-right" unelevated color="blue-10" icon="done" @click="reply.text = reply.textTemp; updateComment(comment)"></q-btn>
                                         </div>
                                         <span v-else style="white-space: pre-line">{{reply.text}}</span>
-                                        <span v-if="$parent.focusedComment === comment._id && $parent.editReply !== reply._id" class="text-caption">{{new Date(reply.createdAt).toLocaleDateString($parent.systemLanguage, commentDateOptions)}}</span>
+                                        <span v-if="focusedComment === comment._id && editReply !== reply._id" class="text-caption">{{new Date(reply.createdAt).toLocaleDateString(systemLanguage, commentDateOptions)}}</span>
                                     </q-item-section>
-                                    <q-item-section side top v-show="hoverReply === reply._id && !$parent.editReply && !comment.resolved" @click="focusComment(comment)">
-                                        <div v-if="!$parent.editComment && !$parent.replyingComment" class="q-gutter-xs">
-                                            <q-btn size="sm" dense flat color="primary" icon="edit" @click="$parent.editReply = reply._id; reply.textTemp = reply.text">
+                                    <q-item-section side top v-show="hoverReply === reply._id && !editReply && !comment.resolved" @click="focusComment(comment)">
+                                        <div v-if="!editComment && !replyingComment" class="q-gutter-xs">
+                                            <q-btn size="sm" dense flat color="primary" icon="edit" @click="editReply = reply._id; reply.textTemp = reply.text">
                                                 <q-tooltip anchor="bottom middle" self="center left" :delay="500" content-class="text-bold">{{t('tooltip.editReply')}}</q-tooltip> 
                                             </q-btn>
                                             <q-btn size="sm" dense flat color="negative" icon="delete" @click="removeReplyFromComment(reply, comment)">
@@ -181,7 +182,7 @@ buttons
                                     </q-item-section>
                                 </q-item>
                                 <!-- Reply input -->
-                                <q-item v-if="$parent.editComment !== comment._id && !comment.resolved">
+                                <q-item v-if="editComment !== comment._id && !comment.resolved">
                                     <q-item-section>
                                         <div class="q-gutter-sm">
                                             <q-input
@@ -189,8 +190,8 @@ buttons
                                             autogrow
                                             outlined
                                             dense
-                                            :placeholder="($parent.editComment || $parent.replyingComment || $parent.editReply)?t('anotherCommentInProgress'):t('reply')"
-                                            :disable="!!$parent.editComment || !!$parent.editReply || ($parent.replyingComment && !comment.replyTemp)"
+                                            :placeholder="(editComment || replyingComment || editReply)?t('anotherCommentInProgress'):t('reply')"
+                                            :disable="!!editComment || !!editReply || (replyingComment && !comment.replyTemp)"
                                             />
                                             <template v-if="comment.replyTemp">
                                                 <q-btn class="float-right" outline color="primary" icon="close" @click="comment.replyTemp = null" />

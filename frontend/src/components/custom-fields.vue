@@ -40,6 +40,9 @@
               <template v-slot:label>
                 {{ field.customField.label }} <span v-if="field.customField.required" class="text-red">*</span>
               </template>
+              <q-badge v-if="commentMode" color="deep-purple" floating class="cursor-pointer" @click="$emit('create-comment', (`field-${field.customField.label}`))">
+                        <q-icon name="add_comment" size="xs" />
+              </q-badge>
             </q-field>
   
             <q-input
@@ -59,6 +62,9 @@
               <template v-slot:label>
                 {{ field.customField.label }} <span v-if="field.customField.required" class="text-red">*</span>
               </template>
+              <q-badge v-if="commentMode" color="deep-purple" floating class="cursor-pointer" @click="$emit('create-comment', (`field-${field.customField.label}`))">
+                        <q-icon name="add_comment" size="xs" />
+              </q-badge>
             </q-input>
   
             <q-input
@@ -91,6 +97,9 @@
               <template v-slot:label>
                 {{ field.customField.label }} <span v-if="field.customField.required" class="text-red">*</span>
               </template>
+              <q-badge v-if="commentMode" color="deep-purple" floating class="cursor-pointer" @click="$emit('create-comment', (`field-${field.customField.label}`))">
+                        <q-icon name="add_comment" size="xs" />
+              </q-badge>
             </q-input>
   
             <q-select
@@ -116,6 +125,9 @@
               <template v-slot:label>
                 {{ field.customField.label }} <span v-if="field.customField.required" class="text-red">*</span>
               </template>
+              <q-badge v-if="commentMode" color="deep-purple" floating class="cursor-pointer" @click="$emit('create-comment', (`field-${field.customField.label}`))">
+                        <q-icon name="add_comment" size="xs" />
+              </q-badge>
             </q-select>
   
             <q-select
@@ -145,6 +157,9 @@
               <template v-slot:label>
                 {{ field.customField.label }} <span v-if="field.customField.required" class="text-red">*</span>
               </template>
+              <q-badge v-if="commentMode" color="deep-purple" floating class="cursor-pointer" @click="$emit('create-comment', (`field-${field.customField.label}`))">
+                        <q-icon name="add_comment" size="xs" />
+              </q-badge>
               <template v-slot:selected-item="scope">
                 <q-chip
                   dense
@@ -187,6 +202,9 @@
               <template v-slot:label>
                 {{ field.customField.label }} <span v-if="field.customField.required" class="text-red">*</span>
               </template>
+              <q-badge v-if="commentMode" color="deep-purple" floating class="cursor-pointer" @click="$emit('create-comment', (`field-${field.customField.label}`))">
+                        <q-icon name="add_comment" size="xs" />
+              </q-badge>
             </q-field>
   
             <q-field
@@ -214,6 +232,9 @@
               <template v-slot:label>
                 {{ field.customField.label }} <span v-if="field.customField.required" class="text-red">*</span>
               </template>
+              <q-badge v-if="commentMode" color="deep-purple" floating class="cursor-pointer" @click="$emit('create-comment', (`field-${field.customField.label}`))">
+                        <q-icon name="add_comment" size="xs" />
+              </q-badge>
             </q-field>
           </div>
         </div>
@@ -226,11 +247,11 @@
   import BasicEditor from 'components/editor';
   
   export default {
-    name: 'custom-fields',
+    name: 'CustomFields',
     props: {
-      value: {
+      modelValue: {
         type: Array,
-        default: () => [],
+        default: [],
       },
       customElement: {
         type: String,
@@ -259,8 +280,8 @@
       const computedFields = computed(() => {
         const result = [];
         let tmpArray = [];
-        if (props.value) {
-          props.value.forEach(e => {
+        if (props.modelValue) {
+          props.modelValue.forEach(e => {
             if (e.customField.fieldType === 'space' && e.customField.size === 12) {
               result.push(tmpArray);
               result.push([]);
@@ -301,7 +322,7 @@
   
       const requiredFieldsEmpty = () => {
         validate();
-        return props.value.some(
+        return props.modelValue.some(
           e => e.customField.fieldType !== 'space' && e.customField.required && (!e.text || e.text.length === 0)
         );
       };

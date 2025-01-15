@@ -1207,7 +1207,7 @@
                                 <q-toolbar>
                                     <div class="text-grey-8">{{t('listOfSections')}}</div>
                                     <q-space />
-                                    <q-btn v-if="isAllowed('sections:update')" flat color="primary" icon="fa fa-edit" @click="editSection = true; editSections = $_.cloneDeep(sections)">
+                                    <q-btn v-if="isAllowed('sections:update')" flat color="primary" icon="fa fa-edit" @click="editSection = true; editSections = _.cloneDeep(sections)">
                                         <q-tooltip anchor="bottom middle" self="center left" :delay="500" content-class="text-bold">Edit</q-tooltip> 
                                     </q-btn>
                                 </q-toolbar>
