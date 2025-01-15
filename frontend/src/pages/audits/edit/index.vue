@@ -393,7 +393,7 @@
 
 	  const getUsersForSection = (sectionId) => {
 			return users.value.filter(user => 
-				user.menu === 'editSection'
+				user.menu === 'editSection' && user.section === sectionId
 			)
 	  };
   
