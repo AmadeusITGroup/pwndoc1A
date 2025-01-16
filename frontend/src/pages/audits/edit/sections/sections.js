@@ -1,5 +1,5 @@
 import { ref, reactive, onMounted, onBeforeUnmount, getCurrentInstance, nextTick, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router';
 import { cloneDeep, isEqual } from 'lodash';
 import { Notify, Dialog } from 'quasar';
 
@@ -333,33 +333,39 @@ export default {
         });
 
         // Navigation guards
-        const beforeRouteLeave = async (to, from, next) => {
-            Utils.syncEditors(proxy.$refs);
-            const warning = displayHighlightWarning();
-
-            if (unsavedChanges()) {
-                Dialog.create({
-                    title: t('msg.thereAreUnsavedChanges'),
-                    message: t('msg.doYouWantToLeave'),
-                    ok: { label: t('btn.confirm'), color: 'negative' },
-                    cancel: { label: t('btn.cancel'), color: 'white' },
-                    focus: 'cancel'
-                })
-                .onOk(() => next());
-            }
-            else if (warning) {
-                Dialog.create({
-                    title: t('msg.highlightWarningTitle'),
-                    message: `${warning}</mark>`,
-                    html: true,
-                    ok: { label: t('btn.leave'), color: 'negative' },
-                    cancel: { label: t('btn.stay'), color: 'white' },
-                })
-                .onOk(() => next());
-            }
-            else
-                next();
-        };
+        onBeforeRouteLeave((to, from , next) => {
+              Utils.syncEditors(proxy.$refs)
+              
+              if (!_.isEqual(section, sectionOrig.value)){
+                  Dialog.create({
+                      title: t('msg.thereAreUnsavedChanges'),
+                      message: t('msg.doYouWantToLeave'),
+                      ok: {label: t('btn.confirm'), color: 'positive'},
+                      cancel: {label: t('btn.cancel'), color: 'negative'},
+                      focus: 'cancel'
+                  })
+                  .onOk(() => next())
+              }
+              else
+                  next()
+            });
+        
+        onBeforeRouteUpdate((to, from , next) => {
+                Utils.syncEditors(proxy.$refs)
+                
+                if (!_.isEqual(section, sectionOrig.value)){
+                    Dialog.create({
+                        title: t('msg.thereAreUnsavedChanges'),
+                        message: t('msg.doYouWantToLeave'),
+                        ok: {label: t('btn.confirm'), color: 'positive'},
+                        cancel: {label: t('btn.cancel'), color: 'negative'},
+                        focus: 'cancel'
+                    })
+                    .onOk(() => next())
+                }
+                else
+                    next()
+              });
 
         return {
             auditId,
@@ -387,8 +393,7 @@ export default {
             displayComment,
             numberOfFilteredComments,
             unsavedChanges,
-            displayHighlightWarning,
-            beforeRouteLeave
+            displayHighlightWarning
         };
     }
 };

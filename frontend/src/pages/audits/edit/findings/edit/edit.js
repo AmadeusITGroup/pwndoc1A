@@ -12,7 +12,7 @@ import VulnService from '@/services/vulnerability';
 import Utils from '@/services/utils';
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick, getCurrentInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router';
 import _ from 'lodash';
 import { settings } from '@/boot/settings';
 import { socket } from '@/boot/socketio';
@@ -741,23 +741,39 @@ export default {
       document.removeEventListener('keydown', _listener, false);
     });
 
-    watch(() => route.params, (newParams, oldParams) => {
-      if (unsavedChanges()) {
-        Dialog.create({
-          title: t('msg.thereAreUnsavedChanges'),
-          message: t('msg.doYouWantToLeave'),
-          ok: { label: t('btn.confirm'), color: 'negative' },
-          cancel: { label: t('btn.cancel'), color: 'white' }
-        })
-          .onOk(() => {
-            next();
-          });
-      } else {
-        next();
-      }
+    onBeforeRouteLeave((to, from , next) => {
+         Utils.syncEditors(proxy.$refs)
+         
+         if (!_.isEqual(finding, findingOrig)){
+             Dialog.create({
+                 title: t('msg.thereAreUnsavedChanges'),
+                 message: t('msg.doYouWantToLeave'),
+                 ok: {label: t('btn.confirm'), color: 'positive'},
+                 cancel: {label: t('btn.cancel'), color: 'negative'},
+                 focus: 'cancel'
+             })
+             .onOk(() => next())
+         }
+         else
+             next()
+       });
 
-
-    });
+      onBeforeRouteUpdate((to, from , next) => {
+        Utils.syncEditors(proxy.$refs)
+        
+        if (!_.isEqual(finding, findingOrig)){
+            Dialog.create({
+                title: t('msg.thereAreUnsavedChanges'),
+                message: t('msg.doYouWantToLeave'),
+                ok: {label: t('btn.confirm'), color: 'positive'},
+                cancel: {label: t('btn.cancel'), color: 'negative'},
+                focus: 'cancel'
+            })
+            .onOk(() => next())
+        }
+        else
+            next()
+      });
 
     return {
       t,

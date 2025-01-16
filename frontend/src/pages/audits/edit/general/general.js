@@ -15,6 +15,7 @@ import Utils from '@/services/utils';
 import AttachmentService from '@/services/attachment';
 import { useI18n } from 'vue-i18n';
 import { ref, reactive, onMounted, onUnmounted, nextTick, getCurrentInstance } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 import _ from 'lodash';
 import {settings} from '@/boot/settings';
 import { socket } from '@/boot/socketio';
@@ -427,6 +428,23 @@ export default {
 
     onUnmounted(() => {
       document.removeEventListener('keydown', _listener, false);
+    });
+
+    onBeforeRouteLeave((to, from , next) => {
+      Utils.syncEditors(proxy.$refs)
+      
+      if (!_.isEqual(audit, auditOrig.value)){
+          Dialog.create({
+              title: t('msg.thereAreUnsavedChanges'),
+              message: t('msg.doYouWantToLeave'),
+              ok: {label: t('btn.confirm'), color: 'positive'},
+              cancel: {label: t('btn.cancel'), color: 'negative'},
+              focus: 'cancel'
+          })
+          .onOk(() => next())
+      }
+      else
+          next()
     });
 
     return {
