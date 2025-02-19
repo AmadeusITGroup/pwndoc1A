@@ -9,13 +9,12 @@
         </div>
         <div v-if="languages.length > 0 && auditTypes.length > 0" class="col-md-8 col-12 offset-md-2 q-mt-md">
           <q-table
-            class="sticky-header-table"
             :columns="dtHeaders"
             :visible-columns="visibleColumns"
             :rows="audits || []"
             :filter="search"
             :filter-method="customFilter"
-            :pagination.sync="pagination"
+            v-model:pagination="pagination"
             row-key="_id"
             separator="none"
             :loading="loading"
@@ -194,7 +193,7 @@ export default {
     const companies = ref([]);
     const languages = ref([]);
     const visibleColumns = ref(['name', 'auditType', 'language', 'company', 'users', 'date', 'action']);
-    const pagination = reactive({
+    const pagination = ref({
       page: 1,
       rowsPerPage: 25,
       sortBy: 'date',
