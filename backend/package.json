@@ -40,7 +40,7 @@
     "jsonwebtoken": "^9.0.2",
     "pizzip": "^3.1.7",
     "lodash": "^4.17.21",
-    "mongoose": "^8.8.4",
+    "mongoose": "^8.9.5",
     "mongoose-field-encryption": "7.0.1",
     "otpauth": "^9.3.1",
     "passport": "^0.6.0",
