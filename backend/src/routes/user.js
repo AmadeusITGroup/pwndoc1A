@@ -14,6 +14,25 @@ module.exports = function(app) {
     var mongoose = require('mongoose')
     var crypto = require('crypto')
 
+    const defaultOidcCallbackPath = '/api/auth/oidc/callback'
+
+    function getOidcCallbackPath() {
+        const config = oidc.getConfig()
+        if (!config.enabled || !config.redirectUri)
+            return defaultOidcCallbackPath
+        return new URL(config.redirectUri).pathname
+    }
+
+    const oidcCallbackPaths = [defaultOidcCallbackPath]
+    try {
+        const configuredCallbackPath = getOidcCallbackPath()
+        if (!oidcCallbackPaths.includes(configuredCallbackPath))
+            oidcCallbackPaths.push(configuredCallbackPath)
+    }
+    catch (_) {
+        // Configuration errors are returned by the OIDC endpoints themselves.
+    }
+
     async function validateAssignableRoles(roles) {
         if (!Array.isArray(roles))
             throw({fn: 'BadParameters', message: 'roles must be an array'})
@@ -54,7 +73,7 @@ module.exports = function(app) {
             const request = await oidc.createAuthorizationRequest()
             res.cookie('oidcTransaction', request.transaction, {
                 sameSite: 'lax', secure: true, httpOnly: true,
-                path: '/api/auth/oidc/callback'
+                path: getOidcCallbackPath()
             })
             res.redirect(request.url)
         }
@@ -73,9 +92,9 @@ module.exports = function(app) {
         }
     })
 
-    app.get('/api/auth/oidc/callback', async function(req, res) {
+    app.get(oidcCallbackPaths, async function(req, res) {
         const transaction = req.cookies.oidcTransaction
-        res.clearCookie('oidcTransaction', {path: '/api/auth/oidc/callback'})
+        res.clearCookie('oidcTransaction', {path: getOidcCallbackPath()})
         if (!transaction || req.query.error || typeof req.query.code !== 'string') {
             Response.Unauthorized(res, 'OIDC authentication failed')
             return
