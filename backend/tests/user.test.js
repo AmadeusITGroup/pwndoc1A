@@ -589,6 +589,47 @@ module.exports = function(request, app) {
         }
       })
 
+      it('Uses the configured OIDC redirect URI path for the callback and transaction cookie', async () => {
+        const previousEnv = {
+          OIDC_ENABLED: process.env.OIDC_ENABLED,
+          OIDC_ISSUER: process.env.OIDC_ISSUER,
+          OIDC_CLIENT_ID: process.env.OIDC_CLIENT_ID,
+          OIDC_REDIRECT_URI: process.env.OIDC_REDIRECT_URI
+        }
+        process.env.OIDC_ENABLED = 'true'
+        process.env.OIDC_ISSUER = 'https://issuer.example/'
+        process.env.OIDC_CLIENT_ID = 'pwndoc-test'
+        process.env.OIDC_REDIRECT_URI = 'https://pwndoc.example/api/sso'
+
+        const requestSpy = jest.spyOn(oidc, 'createAuthorizationRequest')
+          .mockResolvedValue({url: 'https://issuer.example/authorize', transaction: 'signed-transaction'})
+
+        try {
+          const express = require('express')
+          const cookieParser = require('cookie-parser')
+          const oidcApp = express()
+          oidcApp.use(cookieParser())
+          require('../src/routes/user')(oidcApp)
+
+          let response = await request(oidcApp).get('/api/auth/oidc/login')
+          expect(response.status).toBe(302)
+          expect(response.headers['set-cookie']).toEqual(expect.arrayContaining([
+            expect.stringMatching(/oidcTransaction=signed-transaction; Path=\/api\/sso;/)
+          ]))
+
+          response = await request(oidcApp).get('/api/sso?code=test')
+          expect(response.status).toBe(401)
+          expect(response.body.datas).toBe('OIDC authentication failed')
+        }
+        finally {
+          requestSpy.mockRestore()
+          Object.entries(previousEnv).forEach(([key, value]) => {
+            if (value === undefined) delete process.env[key]
+            else process.env[key] = value
+          })
+        }
+      })
+
       it('Uses PKCE and resolves configurable OIDC roles with groups compatibility', async () => {
         const previousEnv = {
           OIDC_ENABLED: process.env.OIDC_ENABLED,

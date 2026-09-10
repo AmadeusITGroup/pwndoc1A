@@ -14,7 +14,7 @@ Set these variables in `.env` before starting PwnDoc:
 | `OIDC_ISSUER` | Yes | Exact issuer URL used for provider discovery. |
 | `OIDC_CLIENT_ID` | Yes | OIDC client identifier. |
 | `OIDC_CLIENT_SECRET` | Provider dependent | Confidential-client secret. |
-| `OIDC_REDIRECT_URI` | Yes | Registered callback URL, normally `https://<pwndoc>/api/auth/oidc/callback`. |
+| `OIDC_REDIRECT_URI` | Yes | Exact registered callback URL, normally `https://<pwndoc>/api/auth/oidc/callback`. PwnDoc also accepts a custom callback path from this URL. |
 | `OIDC_SUCCESS_REDIRECT` | No | Local page opened after login; defaults to `/`. |
 | `OIDC_DISPLAY_NAME` | No | Text shown on the login button. |
 | `OIDC_SCOPE` | No | Defaults to `openid profile email`. |
@@ -27,6 +27,7 @@ Set these variables in `.env` before starting PwnDoc:
 | `OIDC_REAUTH_INTERVAL_MINUTES` | No | Maximum external session age before refresh requires a new OIDC login. Defaults to 480 (8 hours). |
 
 The provider client must enable Authorization Code flow. PwnDoc uses discovery, PKCE, state and nonce validation.
+The callback URL must be reachable through the PwnDoc reverse proxy. When a custom path is used, such as `/api/sso`, PwnDoc registers that path and scopes the OIDC transaction cookie to it automatically.
 
 ## Role resolution
 
