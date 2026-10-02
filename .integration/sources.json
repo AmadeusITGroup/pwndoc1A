@@ -1,0 +1,42 @@
+{
+  "base": {
+    "tag": "v1.7.0",
+    "commit": "87074d626915b8123189771302f94152c917453c"
+  },
+  "imports": [
+    {
+      "name": "OIDC login and role synchronization",
+      "url": "https://github.com/pwndoc/pwndoc/pull/711",
+      "head": "4dea403cb61e457b37a375bec5c4a9fe17bbc9c3",
+      "commits": [
+        "f66756964ed654136d022349c658c1516832391e",
+        "264c1b89de52ef6e82cf2fb8dd01f550024ffa61",
+        "758f5d5c693268b53f2c7a9ab17cf79e4938762b",
+        "8f089fb77c335580fc244422c77e275b7ff95232",
+        "a8447c7027345bb06c7d58db815c0a77f0e154c0",
+        "82b99df8952375ddad28c6a9fc0c46908dd822e4",
+        "4dea403cb61e457b37a375bec5c4a9fe17bbc9c3"
+      ]
+    },
+    {
+      "name": "Generic outgoing webhooks",
+      "url": "https://github.com/pwndoc/pwndoc/pull/716",
+      "head": "c85b0988720b3c70dcc9d6f4266ec31a3f3c9210",
+      "commits": [
+        "83c55201d1536386607392599cfb830e28a78852",
+        "f19af8781631953543ae2bd8e0e08f8ae1317f1a"
+      ],
+      "note": "The PR merge commit is omitted. The first imported commit combines OIDC and webhook configuration."
+    },
+    {
+      "name": "Sanitize HTML diffs prerequisite",
+      "url": "https://github.com/pwndoc/pwndoc/commit/4492d7c035beea1344894b7e69059d01435bff57",
+      "commits": ["4492d7c035beea1344894b7e69059d01435bff57"]
+    },
+    {
+      "name": "Preserve safe HTTP links",
+      "url": "https://github.com/pwndoc/pwndoc/commit/005260b58b4a1ad62c9332daa94142d14184e88a",
+      "commits": ["005260b58b4a1ad62c9332daa94142d14184e88a"]
+    }
+  ]
+}
