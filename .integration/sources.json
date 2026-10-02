@@ -1,7 +1,7 @@
 {
   "base": {
-    "tag": "v1.7.0",
-    "commit": "87074d626915b8123189771302f94152c917453c"
+    "ref": "upstream/main",
+    "commit": "844e50e012d59a180cf11b3bde08907601996f76"
   },
   "imports": [
     {
@@ -27,11 +27,6 @@
         "f19af8781631953543ae2bd8e0e08f8ae1317f1a"
       ],
       "note": "The PR merge commit is omitted. The first imported commit combines OIDC and webhook configuration."
-    },
-    {
-      "name": "Sanitize HTML diffs prerequisite",
-      "url": "https://github.com/pwndoc/pwndoc/commit/4492d7c035beea1344894b7e69059d01435bff57",
-      "commits": ["4492d7c035beea1344894b7e69059d01435bff57"]
     },
     {
       "name": "Preserve safe HTTP links",

@@ -1,15 +1,16 @@
 # Amadeus integration branch
 
 `main` tracks `pwndoc/pwndoc` upstream. `integration` starts at the pinned
-`v1.7.0` commit in [sources.json](sources.json) and contains a linear series of
+upstream `main` commit in [sources.json](sources.json) and contains a linear series of
 reviewed cherry-picks. Each imported commit retains its original source SHA in
 the `-x` trailer. The manifest pins the PR heads and records the intended
 commit order; the Git history contains the conflict resolutions.
 
 The OIDC and webhook imports both add environment variables. Their overlap in
 `.env.example` and `docker-compose.yml` was resolved in the first webhook
-commit so both configurations are retained. The editor link fix requires the
-upstream HTML-diff sanitization commit `4492d7c`, which is imported separately.
+commit so both configurations are retained. The editor link fix relies on the
+upstream HTML-diff sanitization commit `4492d7c`. That commit and the settings
+restore fix `336cac8` are already included in the pinned base.
 
 ## Rebuild without changing integration
 
