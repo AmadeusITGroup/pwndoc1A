@@ -1,7 +1,8 @@
 const DEFAULT_EVENTS = [
     'audit.updated',
     'audit.state.changed',
-    'finding.updated'
+    'finding.updated',
+    'section.updated'
 ];
 const DEFAULT_TIMEOUT_MS = 5000;
 const MAX_TIMEOUT_MS = 60000;

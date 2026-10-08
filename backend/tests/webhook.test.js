@@ -18,7 +18,29 @@ const {
     emitFindingUpdateWebhook
 } = require('../src/lib/finding-webhooks');
 
+const { buildSectionUpdateEvent, emitSectionUpdateWebhook } = require('../src/lib/section-webhooks');
+
 describe('Generic webhooks', () => {
+    describe('section events', () => {
+        it('emits only identifiers and unique sorted metadata', () => {
+            const emitter = jest.fn();
+            const event = emitSectionUpdateWebhook({auditId: 'audit-1', sectionId: 'section-1', actorId: 'user-1', changedFields: ['text', 'customFields', 'text'], text: 'secret password'}, emitter);
+            expect(event).toEqual({type: 'section.updated', data: {auditId: 'audit-1', sectionId: 'section-1', actorId: 'user-1', changedFields: ['customFields', 'text']}});
+            expect(emitter).toHaveBeenCalledWith('section.updated', event.data);
+            expect(JSON.stringify(event)).not.toContain('secret password');
+            expect(buildSectionUpdateEvent({auditId: 1, sectionId: 2, actorId: 3}).data).toEqual({auditId: '1', sectionId: '2', actorId: '3', changedFields: []});
+        });
+        it('signs section events and respects explicit subscriptions', async () => {
+            const fetchImpl = jest.fn().mockResolvedValue({ok: true});
+            const config = {enabled: true, url: 'https://example.test/events', secret: 'secret', timeoutMs: 1000, events: new Set(['section.updated'])};
+            const {data} = buildSectionUpdateEvent({auditId: 'a', sectionId: 's', actorId: 'u'});
+            await dispatchWebhook('section.updated', data, {config, fetchImpl});
+            const request = fetchImpl.mock.calls[0][1];
+            expect(request.headers['X-PwnDoc-Signature']).toBe(signWebhookPayload(request.body, 'secret'));
+            expect(await dispatchWebhook('section.updated', data, {config: {...config, events: new Set(['audit.updated'])}, fetchImpl})).toEqual({delivered: false, skipped: true});
+            expect(fetchImpl).toHaveBeenCalledTimes(1);
+        });
+    });
     const enabledConfig = {
         enabled: true,
         url: 'https://integrations.example.test/pwndoc',

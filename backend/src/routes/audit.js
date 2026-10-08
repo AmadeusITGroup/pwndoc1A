@@ -9,6 +9,7 @@ module.exports = function(app, io) {
     var Settings = require('mongoose').model('Settings');
     var emitAuditUpdateWebhooks = require('../lib/audit-webhooks').emitAuditUpdateWebhooks;
     var emitFindingUpdateWebhook = require('../lib/finding-webhooks').emitFindingUpdateWebhook;
+    var emitSectionUpdateWebhook = require('../lib/section-webhooks').emitSectionUpdateWebhook;
 
     function emitAuditUpdateWebhook(req, previousState, update) {
         emitAuditUpdateWebhooks({
@@ -434,6 +435,12 @@ module.exports = function(app, io) {
 
         Audit.updateSection(acl.isAllowed(req.decodedToken.roles, 'audits:update-all'), req.params.auditId, req.decodedToken.id, req.params.sectionId, section)
         .then(msg => {
+            emitSectionUpdateWebhook({
+                auditId: req.params.auditId,
+                sectionId: req.params.sectionId,
+                actorId: req.decodedToken.id,
+                changedFields: Object.keys(section)
+            });
             Response.Ok(res, msg)
         })
         .catch(err => Response.Internal(res, err));

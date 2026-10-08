@@ -10,7 +10,7 @@ Set these variables in the root `.env` file before starting PwnDoc:
 |---|---|---|
 | `PWNDOC_WEBHOOK_URL` | HTTP(S) endpoint that receives events. An empty value disables webhooks. | empty |
 | `PWNDOC_WEBHOOK_SECRET` | Shared secret used to sign every request. Required when a URL is configured. | empty |
-| `PWNDOC_WEBHOOK_EVENTS` | Comma-separated event allowlist. Use `*` for every supported event. | `audit.updated,audit.state.changed,finding.updated` |
+| `PWNDOC_WEBHOOK_EVENTS` | Comma-separated event allowlist. Use `*` for every supported event. | `audit.updated,audit.state.changed,finding.updated,section.updated` |
 | `PWNDOC_WEBHOOK_TIMEOUT_MS` | Delivery timeout in milliseconds, from 1 to 60000. | `5000` |
 
 Use HTTPS and generate a dedicated high-entropy secret in production. The URL must be reachable from the PwnDoc backend container; `localhost` refers to that container, not to the Docker host.
@@ -74,6 +74,21 @@ Sent after an existing finding is successfully saved. It contains enough informa
   }
 }
 ```
+
+### `section.updated`
+
+Sent after an existing custom audit section is successfully saved through the
+section update API, including saves with unchanged values. No event is emitted
+for rejected or failed saves, section creation or section deletion.
+
+The version-1 envelope contains `data.auditId`, `data.sectionId`, `data.actorId`
+and sorted, unique `data.changedFields` (for example `customFields` or `text`).
+Field contents, section titles and secrets are never included. Receivers fetch
+the section through the authenticated API and decide whether work is needed.
+This event does not additionally emit `audit.updated`.
+
+API writes by integration accounts also emit events. Receivers must use their
+workflow state and idempotency checks to avoid processing loops.
 
 ## Request verification
 
