@@ -10,6 +10,7 @@ The main goal is to have more time to **Pwn** and less time to **Doc** by mutual
 - [Vulnerabilities](https://pwndoc.github.io/pwndoc/#/vulnerabilities)
 - [Audits](https://pwndoc.github.io/pwndoc/#/audits)
 - [Webhooks](https://pwndoc.github.io/pwndoc/#/webhooks)
+- [Audit File Management](docs/audit-file-management.md)
 - [Templating](https://pwndoc.github.io/pwndoc/#/docxtemplate)
 - [Settings](https://pwndoc.github.io/pwndoc/#/settings)
 - [Profile](https://pwndoc.github.io/pwndoc/#/profile)
@@ -26,6 +27,7 @@ The main goal is to have more time to **Pwn** and less time to **Doc** by mutual
 - Vulnerabilities Management with CVSS v3 and v4 scoring
 - Multi-User reporting with real-time collaboration
 - Retest and multi-audit workflows
+- Audit file uploads and downloads with access controls, quotas and optional malware scanning
 - Automatic recovery for unsaved work
 - Audit review and approval workflow
 - Signed outgoing webhooks for audit updates

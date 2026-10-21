@@ -53,9 +53,19 @@ describe('Backup archive IO', () => {
         expect(fs.readFileSync(path.join(root, 'audits.json'), 'utf8')).toBe('[]');
         expect(fs.existsSync(path.join(root, 'ignored.txt'))).toBe(false);
     });
+    it('extracts selected audit-file content into its own directory', async () => {
+        const filename = await archive([['audit-files/123', 'attachment bytes'], ['audits-files.json', '[]']]);
+        await extractArchive(filename, root, ['audit-files/', 'audits-files.json'], () => true);
+        expect(fs.readFileSync(path.join(root, 'audit-files/123'), 'utf8')).toBe('attachment bytes');
+    });
+    it('rejects unsafe entries under a selected audit-file directory', async () => {
+        const filename = await archive([['audit-files/../../escape.txt', 'outside']]);
+        await expect(extractArchive(filename, root, ['audit-files/'], () => true)).rejects.toThrow('Unsafe archive entry');
+    });
     it('rejects destination write failures and missing selected files', async () => {
         const filename = await archive([['audits.json', '[]']]);
-        await expect(extractArchive(filename, path.join(root, 'absent'), ['audits.json'], () => true)).rejects.toThrow();
+        fs.mkdirSync(path.join(root, 'audits.json'));
+        await expect(extractArchive(filename, root, ['audits.json'], () => true)).rejects.toThrow();
         await expect(extractArchive(filename, root, ['missing.json'], () => true)).rejects.toThrow();
     });
     it.each(['empty', 'short', 'invalid-header', 'truncated', 'wrong-password', 'missing'])('rejects %s encrypted input rather than remaining pending', async scenario => {

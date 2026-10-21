@@ -337,6 +337,7 @@ module.exports = function(app) {
             type: 'full',
             protected: false,
             data: allData,
+            auditFilesVersion: 1,
         }
 
         // Params
@@ -619,6 +620,10 @@ module.exports = function(app) {
             if (info.data.includes('Audits') && backupData.includes('Audits')) {
                 files.push('audits.json')
                 files.push('audits-images.json')
+                if (info.auditFilesVersion === 1) {
+                    files.push('audits-files.json')
+                    files.push('audit-files/')
+                }
             }
 
             // Vulnerabilities
@@ -695,7 +700,7 @@ module.exports = function(app) {
             let restorePromises = [Language.restore(restoreTmpPath)]
             // Audits
             if (info.data.includes('Audits') && backupData.includes('Audits')) {
-                restorePromises.push(Audit.restore(restoreTmpPath))
+                restorePromises.push(Audit.restore(restoreTmpPath, restoreMode))
             }
 
             // Vulnerabilities

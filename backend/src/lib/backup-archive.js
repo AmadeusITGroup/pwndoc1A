@@ -9,29 +9,44 @@ async function extractArchive(archivePath, destPath, files, isSafePath) {
     const extracted = new Set();
     const directories = files.filter(name => name.endsWith('/'));
     const extract = tar.extract();
+    const root = path.resolve(destPath);
+    let unsafeEntry;
     extract.on('entry', (header, stream, next) => {
         const selected = files.includes(header.name) ||
-            (isSafePath(header.name) && directories.some(dir => path.normalize(header.name).startsWith(dir)));
-        if (!selected) {
+            directories.some(dir => header.name.startsWith(dir));
+        if (!selected || unsafeEntry) {
+            stream.once('end', next);
+            stream.resume();
+            return;
+        }
+        const target = path.resolve(root, header.name);
+        const relative = path.relative(root, target);
+        if (!relative || relative.startsWith('..' + path.sep) || relative === '..' ||
+            path.isAbsolute(header.name) || header.name.includes('\\') || !isSafePath(header.name) ||
+            !['file', 'directory'].includes(header.type)) {
+            unsafeEntry = new Error('Unsafe archive entry');
             stream.once('end', next);
             stream.resume();
             return;
         }
         (async () => {
             if (header.type === 'directory') {
-                await fs.promises.mkdir(path.join(destPath, header.name), {recursive: true});
+                await fs.promises.mkdir(target, {recursive: true});
                 stream.resume();
             } else {
                 // Do not advance the extractor until the destination has finished writing.
-                await pipeline(stream, fs.createWriteStream(path.join(destPath, header.name)));
+                await fs.promises.mkdir(path.dirname(target), {recursive: true});
+                await pipeline(stream, fs.createWriteStream(target));
             }
             extracted.add(header.name);
             next();
         })().catch(error => extract.destroy(error));
     });
     await pipeline(fs.createReadStream(archivePath), zlib.createGunzip(), extract);
+    if (unsafeEntry) throw unsafeEntry;
     if (!extracted.size) throw new Error('No files were extracted from the Archive');
-    const missing = files.filter(name => !extracted.has(name));
+    // A directory selection may legitimately be empty; its manifest is required.
+    const missing = files.filter(name => !name.endsWith('/') && !extracted.has(name));
     if (missing.length) throw new Error(`Missing files in the archive: ${missing.toString()}`);
 }
 
