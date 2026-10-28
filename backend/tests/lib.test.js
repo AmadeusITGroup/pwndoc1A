@@ -565,6 +565,16 @@ module.exports = function () {
         expect(ooxml).toEqual(expected)
       })
 
+      it('keeps a multiline CodeBlock inside one bordered paragraph', () => {
+        var html = '<pre><code class="language-plaintext">first line\n  second line\nthird line</code></pre>'
+        var ooxml = html2ooxml(html)
+        expect((ooxml.match(/<w:pStyle w:val="Code"\/>/g) || [])).toHaveLength(1)
+        expect((ooxml.match(/<w:br\/>/g) || [])).toHaveLength(2)
+        expect(ooxml).toContain('first line')
+        expect(ooxml).toContain('  second line')
+        expect(ooxml).toContain('third line')
+      })
+
       it('Empty CodeBlock', () => {
         var html = `<pre><code class="language-plaintext"></code></pre>`
         var expected =
@@ -769,6 +779,14 @@ module.exports = function () {
         `</w:p>`+
         `<w:p/>`
         var ooxml = html2ooxml(html)
+        // The prior expected XML used a separate Code paragraph for every line.
+        // Convert only those boundaries into Word line breaks for an exact
+        // syntax-colour regression check without repeating the long fixture.
+        const codeStart = '<w:p><w:pPr><w:pStyle w:val="Code"/></w:pPr>'
+        const firstCode = expected.indexOf(codeStart)
+        expected = expected.slice(0, firstCode + codeStart.length) + expected
+          .slice(firstCode + codeStart.length)
+          .replaceAll('</w:p>' + codeStart, '<w:r><w:br/></w:r>')
         expect(ooxml).toEqual(expected)
       })
     })

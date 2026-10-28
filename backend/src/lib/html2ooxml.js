@@ -69,12 +69,9 @@ function html2ooxml(html, style = '') {
                 if (color && color[1]) cRunProperties.color = getTextColor(color[1])
             }
             else if (tag === "br") {
-                if (inCodeBlock) {
-                    paragraphs.push(cParagraph)
-                    cParagraph = new docx.Paragraph({style: "Code"})
-                }
-                else
-                    cParagraph.addChildElement(new docx.Run({break: 1}))
+                // Keep a <pre> in one paragraph: its border/shading belongs to
+                // the whole code block, not to each individual source line.
+                cParagraph.addChildElement(new docx.Run({break: 1}))
             }
             else if (tag === "ul") {
                 list_state.push('bullet')
